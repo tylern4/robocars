@@ -5,17 +5,8 @@ import pygame
 import pyparticles
 import random, math, itertools, time, pickle
 
-# declare size of window and track to use
-(width, height) = (1200, 450)
-track = 'track.bmp'
 # given track, place checkpoints
 checkpoints = [(400,150),(500,70),(600,60),(640,140),(605,210),(680,300),(720,380),(580,390),(450,350),(320,320),(250,235),(110,325),(60,200),(125,75),(290,90)]
-
-# set up run parameters
-duration = 60
-n_generations = 40
-generation_size = 300
-n_to_keep = 10
 
 # for ease, define colours here
 RED = (255,0,0)
@@ -24,11 +15,8 @@ GREY = (230,230,230)
 BLUE = (0,0,255)
 BLACK = (0,0,0)
 
-# Train to create save file of best racers, Race to race them on a starting grid
-Train = True
-Race = True
 
-if Train:
+def do_training(duration, n_generations, generation_size, n_to_keep, track, driver_file='final_drivers'):
 	
 	# initiate display and display options
 	screen = pygame.display.set_mode((width, height))
@@ -190,15 +178,16 @@ if Train:
 			env.addParticles(1, x=checkpoints[0][0], y=checkpoints[0][1], speed=0, size=5)
 
 		# save these particles to file
-		with open('final_drivers','wb') as output:
+		with open(driver_file, 'wb') as output:
 			driver_list = sorted_list[:10]
 			pickle.dump(driver_list, output)
 
 		n += 1
 
-if Race:
+
+def do_race(duration, driver_file='final_drivers'):
 	# load in drivers
-	with open('final_drivers','rb') as input:
+	with open(driver_file, 'rb') as input:
 		driver_list = pickle.load(input)
 
 	# initiate race window
@@ -343,3 +332,24 @@ if Race:
 
 	# sort the cars, produce a final leaderboard
 	sorted_list = sorted(particle_list, key=lambda particle:particle.score)[::-1][:10]
+
+
+
+if __name__ == "__main__":
+	# set up run parameters
+	duration = 60
+	n_generations = 40
+	generation_size = 300
+	n_to_keep = 10
+	# declare size of window and track to use
+	(width, height) = (1200, 450)
+	track = 'track.bmp'
+
+	# Train to create save file of best racers, Race to race them on a starting grid
+	Train = True
+	Race = True
+
+	if Train:
+		do_training(duration, n_generations, generation_size, n_to_keep, track)
+	if Race:
+		do_race(track)
