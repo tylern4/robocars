@@ -4,6 +4,7 @@
 import pygame
 import pyparticles
 import random, math, itertools, time, pickle
+import argparse
 
 # given track, place checkpoints
 checkpoints = [(400,150),(500,70),(600,60),(640,140),(605,210),(680,300),(720,380),(580,390),(450,350),(320,320),(250,235),(110,325),(60,200),(125,75),(290,90)]
@@ -16,7 +17,7 @@ BLUE = (0,0,255)
 BLACK = (0,0,0)
 
 
-def do_training(duration, n_generations, generation_size, n_to_keep, track, driver_file='final_drivers'):
+def do_training(duration, n_generations, generation_size, n_to_keep, track, driver_file):
 	
 	# initiate display and display options
 	screen = pygame.display.set_mode((width, height))
@@ -185,7 +186,7 @@ def do_training(duration, n_generations, generation_size, n_to_keep, track, driv
 		n += 1
 
 
-def do_race(duration, driver_file='final_drivers'):
+def do_race(duration, track, driver_file):
 	# load in drivers
 	with open(driver_file, 'rb') as input:
 		driver_list = pickle.load(input)
@@ -336,20 +337,35 @@ def do_race(duration, driver_file='final_drivers'):
 
 
 if __name__ == "__main__":
-	# set up run parameters
-	duration = 60
-	n_generations = 40
-	generation_size = 300
-	n_to_keep = 10
+	# set up run parameters from command line options
+	parser = argparse.ArgumentParser(description='Robocar training and racing simulation.')
+	parser.add_argument('-t', '--train', dest='Train', 
+						action='store_true', default=False, help='Train the model.')
+	parser.add_argument('-r', '--race', dest='Race',
+                     	action='store_true', default=False, help='Race the trained model.')
+	parser.add_argument('-d', '--duration', dest='duration', 
+						type=int, default=60, help='Number of seconds per generation.')
+	parser.add_argument('-n', '--n_generations', dest='n_generations',
+	                    type=int, default=40, help='Number of generations.')
+	parser.add_argument('-s', '--generation_size', dest='generation_size',
+	                    type=int, default=300, help='Number of cars per generation.')
+	parser.add_argument('-k', '--n_to_keep', dest='n_to_keep',
+	                    type=int, default=10, help='Number from each generation to keep.')
+	parser.add_argument('--track', dest='track',
+	                    default='track.bmp', help='Track file to use for training or racing.')
+	parser.add_argument('--final_drivers', dest='final_drivers',
+                     	default='final_drivers', help='Drivers file to use for training and testing.')
+
+
+	args = parser.parse_args()
+
 	# declare size of window and track to use
 	(width, height) = (1200, 450)
-	track = 'track.bmp'
 
-	# Train to create save file of best racers, Race to race them on a starting grid
-	Train = True
-	Race = True
+	if not args.Train and not args.Race:
+		parser.print_help()
 
-	if Train:
-		do_training(duration, n_generations, generation_size, n_to_keep, track)
-	if Race:
-		do_race(track)
+	if args.Train:
+		do_training(args.duration, args.n_generations, args.generation_size, args.n_to_keep, args.track, args.final_drivers)
+	if args.Race:
+		do_race(args.duration, args.track, args.final_drivers)
